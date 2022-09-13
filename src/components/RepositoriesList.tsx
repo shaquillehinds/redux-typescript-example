@@ -1,24 +1,19 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { actionCreators } from "../store";
-import { Action } from "../store/actions";
-import { RepositoriesState } from "../store/reducers/repositories.reducers";
-
-interface State {
-  repositories: RepositoriesState;
-}
+import { useActions } from "../hooks/useActions";
+import { useTypedSelector } from "../hooks/useTypedSelector";
 
 const RepositoriesList: React.FC = () => {
   const [term, setTerm] = useState("");
 
-  const dispatch = useDispatch();
+  const { searchRepositories } = useActions();
 
-  const repositories = useSelector((state: State) => state.repositories);
+  const { data, error, loading } = useTypedSelector(
+    (state) => state.repositories
+  );
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
-    dispatch(actionCreators.searchRepositories(term) as any);
+    searchRepositories(term);
   };
 
   return (
@@ -27,11 +22,17 @@ const RepositoriesList: React.FC = () => {
         <input value={term} onChange={(e) => setTerm(e.target.value)} />
         <button>Search</button>
       </form>
-      <ul>
-        {repositories.data.map((repo) => (
-          <li key={repo}>{repo}</li>
-        ))}
-      </ul>
+      {error ? (
+        <h3>{error}</h3>
+      ) : loading ? (
+        <h3>Loading...</h3>
+      ) : (
+        <ul>
+          {data.map((repo) => (
+            <li key={repo}>{repo}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };
